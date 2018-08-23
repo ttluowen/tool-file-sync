@@ -32,13 +32,13 @@ excludeExts=project,log,gitignore
 
 1、先将目录导入到 MyEclipse
 
-2、在目录右键
+2、在目录右键<br />
 ![Export](https://github.com/ttluowen/FileSync/blob/master/images/2.png "Export")
 
-3、选择导出为 Runnable JAR file
+3、选择导出为 Runnable JAR file<br />
 ![导出为可执行Jar文件](https://github.com/ttluowen/FileSync/blob/master/images/3.png "导出为可执行Jar文件")
 
-4、选择主类和导出的文件
+4、选择主类和导出的文件<br />
 ![导出配置](https://github.com/ttluowen/FileSync/blob/master/images/4.png "导出配置")
 
 5、Finish
