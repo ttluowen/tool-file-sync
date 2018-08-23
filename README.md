@@ -1,12 +1,15 @@
 # FileSync
 将本地多个文件夹的内容实时同步到另外一个文件夹中
 
-## 使用
+![文件清单](http://www.yiyuen.com/file/view/605 "文件清单")
+
+### 使用命令行
 ```
 java -jar FileSync-v1.0.jar
 ```
+或直接点击“窗口启动.bat”运行
 
-## 目录配置
+### config.properties配置
 ```
 # 监视目录。
 watchPath=D\:\\a\\
@@ -24,3 +27,18 @@ excludeExts=project,log,gitignore
 ```
 
 或使用 excludeFiles.txt 目录来指定要排除的文件或文件夹。
+
+### 手动打包
+
+1、先将目录导入到 MyEclipse
+
+2、在目录右键
+![Export](http://www.yiyuen.com/file/view/606 "Export")
+
+3、选择导出为 Runnable JAR file
+![导出为可执行Jar文件](http://www.yiyuen.com/file/view/607 "导出为可执行Jar文件")
+
+4、选择主类和导出的文件
+![导出配置](http://www.yiyuen.com/file/view/608 "导出配置")
+
+5、Finish
