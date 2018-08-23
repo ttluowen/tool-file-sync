@@ -1,7 +1,7 @@
 # FileSync
 将本地多个文件夹的内容实时同步到另外一个文件夹中
 
-![文件清单](/ttluowen/FileSync/blob/master/images/1.png?raw=true "文件清单")
+![文件清单](https://github.com/ttluowen/FileSync/blob/master/images/1.png "文件清单")
 
 ### 使用命令行
 ```
@@ -33,13 +33,13 @@ excludeExts=project,log,gitignore
 1、先将目录导入到 MyEclipse
 
 2、在目录右键
-![Export](/ttluowen/FileSync/blob/master/images/2.png?raw=true "Export")
+![Export](https://github.com/ttluowen/FileSync/blob/master/images/2.png "Export")
 
 3、选择导出为 Runnable JAR file
-![导出为可执行Jar文件](/ttluowen/FileSync/blob/master/images/3.png?raw=true "导出为可执行Jar文件")
+![导出为可执行Jar文件](https://github.com/ttluowen/FileSync/blob/master/images/3.png "导出为可执行Jar文件")
 
 4、选择主类和导出的文件
-![导出配置](/ttluowen/FileSync/blob/master/images/4.png?raw=true "导出配置")
+![导出配置](https://github.com/ttluowen/FileSync/blob/master/images/4.png "导出配置")
 
 5、Finish
 
