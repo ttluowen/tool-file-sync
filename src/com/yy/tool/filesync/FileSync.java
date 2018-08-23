@@ -4,18 +4,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 
-import com.rt.log.Logger;
-import com.rt.util.array.ArrayUtil;
-import com.rt.util.file.FileUtil;
-import com.rt.util.number.NumberUtil;
-import com.rt.util.proterty.PropertyUtil;
-import com.rt.util.string.StringUtil;
-import com.rt.web.config.SystemConfig;
+import com.yy.log.Logger;
+import com.yy.util.array.ArrayUtil;
+import com.yy.util.file.FileUtil;
+import com.yy.util.map.MapValue;
+import com.yy.util.number.NumberUtil;
+import com.yy.util.proterty.PropertyUtil;
+import com.yy.util.string.StringUtil;
+import com.yy.web.config.SystemConfig;
 
 /**
  * 文件变化监视器。
@@ -92,11 +92,11 @@ public class FileSync {
 		Logger.setSystemPath(path);
 	
 		
-		Map<String, String> properties = PropertyUtil.readAsMap(path + "config.properties");
+		MapValue properties = PropertyUtil.readAsMap(path + "config.properties");
 		// 监视目录。
-		watchPath = properties.get("watchPath").split(",");
+		watchPath = properties.getString("watchPath").split(",");
 		// 同步目录。
-		syncPath = properties.get("syncPath").split(",");
+		syncPath = properties.getString("syncPath").split(",");
 	
 		
 		// 检查相关目录，如果不存在就立即创建。
@@ -119,9 +119,8 @@ public class FileSync {
 		}
 		
 		
-		
 		// 差异监听周期。
-		watchInterval = NumberUtil.parseInt(StringUtil.unEmpty(properties.get("watchInterval"), DEFAULT_WATCH_INTERVAL + ""));
+		watchInterval = NumberUtil.parseInt(StringUtil.unEmpty(properties.getString("watchInterval"), DEFAULT_WATCH_INTERVAL + ""));
 		
 	
 		// 排除的文件类型。
@@ -232,7 +231,6 @@ public class FileSync {
 	}
 
 
-
 	/**
 	 * 新建操作。
 	 * 
@@ -265,7 +263,6 @@ public class FileSync {
 	}
 
 
-
 	/**
 	 * 修改操作。
 	 * 
@@ -277,7 +274,6 @@ public class FileSync {
 		// 同新增操作。
 		create(file, index);
 	}
-
 
 
 	/**
