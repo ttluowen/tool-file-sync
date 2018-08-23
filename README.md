@@ -42,3 +42,6 @@ excludeExts=project,log,gitignore
 ![导出配置](http://www.yiyuen.com/file/view/608 "导出配置")
 
 5、Finish
+
+### 服务化
+现有目录里已经自带了 Windows 服务安装工具，简单配置 serviceInstaller/config.properties 文件。
