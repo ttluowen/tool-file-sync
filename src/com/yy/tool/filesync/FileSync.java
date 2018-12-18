@@ -251,10 +251,12 @@ public class FileSync {
 			if (file.isDirectory()) {
 				// 新建文件夹。
 				if (!syncFile.exists()) {
+					Logger.log("新建文件夹：" + syncFile);
 					syncFile.mkdirs();
 				}
 			} else {
 				// 复制文件。
+				Logger.log("复制文件：" + syncFile);
 				FileUtil.save(syncFile, FileUtil.readAsByte(file));
 			}
 		} catch (Exception e) {
@@ -296,10 +298,12 @@ public class FileSync {
 			if (file.isDirectory()) {
 				// 删除文件夹。
 				if (syncFile.exists()) {
+					Logger.log("删除文件夹：" + syncFile);
 					syncFile.delete();
 				}
 			} else {
 				// 删除文件。
+				Logger.log("删除文件：" + syncFile);
 				FileUtil.delete(syncFile);
 			}
 		} catch (Exception e) {
