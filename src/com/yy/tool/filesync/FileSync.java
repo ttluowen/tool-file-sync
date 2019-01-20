@@ -8,12 +8,12 @@ import java.util.List;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.yy.log.Logger;
-import com.yy.util.ArrayUtil;
 import com.yy.util.FileUtil;
-import com.yy.util.MapValue;
+import com.yy.util.JsonConfigUtil;
 import com.yy.util.NumberUtil;
-import com.yy.util.PropertyUtil;
 import com.yy.util.StringUtil;
 import com.yy.web.config.SystemConfig;
 
@@ -30,13 +30,11 @@ public class FileSync {
 	private static final int DEFAULT_WATCH_INTERVAL = 2;
 	
 
-	/** 监听目录。 */
-	private String[] watchPath;
-	/** 同步目录。 */
-	private String[] syncPath;
+	/** 监听的目录。 */
+	private List<PathStruct> paths = new ArrayList<>();
 	
 	/** 差异监听周期，单位秒。 */
-	private int watchInterval = DEFAULT_WATCH_INTERVAL;
+	private int interval = DEFAULT_WATCH_INTERVAL;
 
 	/** 排除的文件类型。 */
 	private List<String> excludeExts = new ArrayList<>();
@@ -56,8 +54,10 @@ public class FileSync {
 	 */
 	public void stop() throws Exception {
 
-		for (FileAlterationMonitor item : monitor) {
-			item.stop();
+		if (monitor != null) {
+			for (FileAlterationMonitor item : monitor) {
+				item.stop();
+			}
 		}
 	}
 
@@ -69,8 +69,10 @@ public class FileSync {
 	 */
 	public void start() throws Exception {
 
-		for (FileAlterationMonitor item : monitor) {
-			item.start();
+		if (monitor != null) {
+			for (FileAlterationMonitor item : monitor) {
+				item.start();
+			}
 		}
 	}
 
@@ -84,60 +86,71 @@ public class FileSync {
 	private void init() throws IOException {
 	
 		// 获取当前运行位置。
-		String path = System.getProperty("user.dir") + "\\";
+		String systemPath = System.getProperty("user.dir") + "\\";
 	
 		
 		// 设置系统目录和日志位置。
-		SystemConfig.setSystemPath(path);
-		Logger.setSystemPath(path);
-	
+		SystemConfig.setSystemPath(systemPath);
+		Logger.setSystemPath(systemPath);
 		
-		MapValue properties = PropertyUtil.readAsMap(path + "config.properties");
-		// 监视目录。
-		watchPath = properties.getString("watchPath").split(",");
-		// 同步目录。
-		syncPath = properties.getString("syncPath").split(",");
 	
+		JSONObject config = JsonConfigUtil.read(systemPath + "config.json");
+		if (config == null) {
+			Logger.log("读取配置失败");
+			return;
+		}
 		
-		// 检查相关目录，如果不存在就立即创建。
-		for (int i = 0; i < watchPath.length; i++) {
-			String item = watchPath[i];
-			File watchPathFile = new File(item);
+		
+		JSONArray paths = config.getJSONArray("paths");
+		for (int i = 0, l = paths.size(); i < l; i++) {
+			JSONObject item = paths.getJSONObject(i);
+			String watch = item.getString("watch");
+			JSONArray syncs = item.getJSONArray("syncs");
+			List<String> syncList = new ArrayList<>();
+			
+			for (int a = 0; a < syncs.size(); a++) {
+				syncList.add(syncs.getString(a));
+			}
+
+			
+			// 文件是否存在检测。
+			File watchPathFile = new File(watch);
 			if (!watchPathFile.exists()) {
 				watchPathFile.mkdirs();
 			}
-			watchPath[i] = SystemConfig.appendLastFileSeparator(watchPathFile.getAbsolutePath());
-		}
-		
-		for (int i = 0; i < syncPath.length; i++) {
-			String item = syncPath[i];
-			File asyncPathFile = new File(item);
-			if (!asyncPathFile.exists()) {
-				asyncPathFile.mkdirs();
+			watch = SystemConfig.appendLastFileSeparator(watchPathFile.getAbsolutePath());
+			
+			for (int a = 0; a < syncList.size(); a++) {
+				String sy = syncList.get(a);
+				File asyncPathFile = new File(sy);
+				if (!asyncPathFile.exists()) {
+					asyncPathFile.mkdirs();
+				}
+				syncList.set(a, SystemConfig.appendLastFileSeparator(asyncPathFile.getAbsolutePath()));
 			}
-			syncPath[i] = SystemConfig.appendLastFileSeparator(asyncPathFile.getAbsolutePath());
+			
+
+			PathStruct path = new PathStruct();
+			path.setWatch(watch);
+			path.setSync(syncList);
+
+			this.paths.add(path);
 		}
 		
 		
 		// 差异监听周期。
-		watchInterval = NumberUtil.parseInt(StringUtil.unEmpty(properties.getString("watchInterval"), DEFAULT_WATCH_INTERVAL + ""));
+		interval = NumberUtil.parseInt(StringUtil.unEmpty(config.getString("interval"), DEFAULT_WATCH_INTERVAL + ""));
 		
 	
 		// 排除的文件类型。
-		String excludeExtsStr = StringUtil.unNull(properties.get("excludeExts"));
-		if (!excludeExtsStr.isEmpty()) {
-			for (String item : excludeExtsStr.split(",")) {
-				item = item.trim().toLowerCase();
-				
-				if (!item.isEmpty()) {
-					excludeExts.add(item.trim());
-				}
-			}
+		JSONArray excludeExts = config.getJSONArray("excludeExts");
+		for (int i = 0; i < excludeExts.size(); i++) {
+			this.excludeExts.add(excludeExts.getString(i).trim().toLowerCase());
 		}
 
 
 		// 排除的文件或文件夹。
-		File excludeFilesFile = new File(path + "excludeFiles.txt");
+		File excludeFilesFile = new File(systemPath + "excludeFiles.txt");
 		if (excludeFilesFile.exists()) {
 			for (String line : FileUtil.read(excludeFilesFile).split("\n")) {
 				// 过滤前后空格。
@@ -145,8 +158,9 @@ public class FileSync {
 
 				// 过滤空行和注释行。
 				if (!line.isEmpty() && line.indexOf("#") == -1) {
-					for (String item : watchPath) {
-						excludeFiles.add(new File(item + "\\" + line).getAbsolutePath());
+					for (PathStruct p : this.paths) {
+						String watch = p.getWatch();
+						excludeFiles.add(new File(watch + "\\" + line).getAbsolutePath());
 					}
 				}
 			}
@@ -154,19 +168,21 @@ public class FileSync {
 
 
 		// 监视器初始化。
-		int size = watchPath.length;
+		int size = this.paths.size();
 		monitor = new FileAlterationMonitor[size];
 		
 		for (int i = 0; i < size; i++) {
-			monitor[i] = new FileAlterationMonitor(watchInterval * 1000);
-			FileAlterationObserver observer = new FileAlterationObserver(new File(watchPath[i]));
+			monitor[i] = new FileAlterationMonitor(interval * 1000);
+			FileAlterationObserver observer = new FileAlterationObserver(new File(this.paths.get(i).getWatch()));
 			monitor[i].addObserver(observer);
 			observer.addListener(new SyncListener(this, i));
 		}
 
 
-		Logger.log("Watch path: " + ArrayUtil.join(watchPath));
-		Logger.log("Sync path: " + ArrayUtil.join(syncPath));
+		for (PathStruct p : this.paths) {
+			Logger.log("Watch path: " + p.getWatch());
+			Logger.log("Sync path: " + p.getSync());
+		}
 		Logger.log("Exclude exts: " + excludeExts);
 		Logger.log("Exclude files: " + excludeFiles);
 		Logger.log("Inited");
@@ -225,9 +241,19 @@ public class FileSync {
 	 * @param index
 	 * @return
 	 */
-	private File toSyncFile(File watchFile, int index) {
+	private List<File> toSyncFiles(File watchFile, int index) {
 		
-		return new File(watchFile.getAbsolutePath().replace(watchPath[index], syncPath[index]));
+		String watchFilePath = watchFile.getAbsolutePath();
+		PathStruct path = paths.get(index);
+		String watch = path.getWatch();
+		List<String> sync = path.getSync();
+		
+		List<File> list = new ArrayList<>();
+		for (String item : sync) {
+			list.add(new File(watchFilePath.replace(watch, item)));
+		}
+
+		return list;
 	}
 
 
@@ -245,19 +271,23 @@ public class FileSync {
 			}
 
 
-			File syncFile = toSyncFile(file, index);
+			List<File> syncFile = toSyncFiles(file, index);
 
 
 			if (file.isDirectory()) {
 				// 新建文件夹。
-				if (!syncFile.exists()) {
-					Logger.log("新建文件夹：" + syncFile);
-					syncFile.mkdirs();
+				for (File f : syncFile) {
+					if (!f.exists()) {
+						Logger.log("新建文件夹：" + f);
+						f.mkdirs();
+					}
 				}
 			} else {
 				// 复制文件。
-				Logger.log("复制文件：" + syncFile);
-				FileUtil.save(syncFile, FileUtil.readAsByte(file));
+				for (File f : syncFile) {
+					Logger.log("复制文件：" + f);
+					FileUtil.save(f, FileUtil.readAsByte(file));
+				}
 			}
 		} catch (Exception e) {
 			Logger.printStackTrace(e);
@@ -292,19 +322,23 @@ public class FileSync {
 			}
 			
 
-			File syncFile = toSyncFile(file, index);
+			List<File> syncFile = toSyncFiles(file, index);
 
 
 			if (file.isDirectory()) {
 				// 删除文件夹。
-				if (syncFile.exists()) {
-					Logger.log("删除文件夹：" + syncFile);
-					syncFile.delete();
+				for (File f : syncFile) {
+					if (f.exists()) {
+						Logger.log("删除文件夹：" + f);
+						f.delete();
+					}
 				}
 			} else {
 				// 删除文件。
-				Logger.log("删除文件：" + syncFile);
-				FileUtil.delete(syncFile);
+				for (File f : syncFile) {
+					Logger.log("删除文件：" + f);
+					FileUtil.delete(f);
+				}
 			}
 		} catch (Exception e) {
 			Logger.printStackTrace(e);

@@ -1,0 +1,32 @@
+{
+	"paths": [
+	    {
+	        /*
+	         * 监视的目录。
+	         * 如：D:\\data\\
+	         */
+	        "watch": "D:\\Company\\YiYuen\\Git-Private\\YiYuen\\src\\main\\webapp\\",
+	        /*
+	         * 同步目标目录。
+	         * 如：D:\\target\\
+	         */
+	        "syncs": [
+	            "D:\\Company\\YiYuen\\Git-Private\\YiYuen\\target\\yiyuen-1.0\\",
+	            "D:\\Workspace\\YiYuen-Center\\"
+	        ]
+	    },
+	    {
+	        "watch": "D:\\Company\\YiYuen\\Git-Private\\YiYuen\\target\\classes\\",
+	        "syncs": [
+	            "D:\\Company\\YiYuen\\Git-Private\\YiYuen\\target\\yiyuen-1.0\\WEB-INF\\classes\\",
+	            "D:\\Workspace\\YiYuen-Center\\WEB-INF\\classes\\"
+	        ]
+	    }
+	],
+	// 差异判断周期，单位秒。
+	// 默认 3 秒。
+	"interval": 3,
+	// 排除的文件类型。
+	// 如：log、project
+	"excludeExts": ["project", "log", "gitignore"]
+}
