@@ -7,6 +7,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/java-core"/>
+	<classpathentry kind="lib" path="lib/yy-core-1.9.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

@@ -46,7 +46,7 @@ public class SyncListener implements FileAlterationListener {
 	@Override
 	public void onDirectoryChange(File directory) {
 		
-		monitor.modify(directory, index);
+		monitor.change(directory, index);
 	}
 
 	@Override
@@ -64,7 +64,7 @@ public class SyncListener implements FileAlterationListener {
 	@Override
 	public void onFileChange(File file) {
 		
-		monitor.modify(file, index);
+		monitor.change(file, index);
 	}
 
 	@Override

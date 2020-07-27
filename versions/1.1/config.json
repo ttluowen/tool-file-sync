@@ -26,6 +26,8 @@
 	// 差异判断周期，单位秒。
 	// 默认 3 秒。
 	"interval": 3,
+	// 监听动作类型，默认 ["create", "change", "delete"]。
+	"listens": ["create", "change", "delete"],
 	// 排除的文件类型。
 	// 如：log、project
 	"excludeExts": ["project", "log", "gitignore"]
