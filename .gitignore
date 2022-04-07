@@ -1,4 +1,5 @@
 target
 /bin
 /logs
-/versions/1.0/logs
+/build/1.0/logs
+/.idea
